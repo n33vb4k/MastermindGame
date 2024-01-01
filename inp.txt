@@ -6,4 +6,3 @@ blue blue blue yellow
 red green green
 red blue yellow
 red red red
-

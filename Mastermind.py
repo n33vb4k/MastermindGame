@@ -29,6 +29,7 @@ max_guesses = 12
 available_colours = ["blue", "red", "yellow", "green", "orange"]
 
 args = sys.argv
+
 temp_colours = []
 for i in range(len(args)):
     if i == 0:
@@ -50,7 +51,6 @@ for i in range(len(args)):
     else:
         temp_colours.append(args[i])
 
-
 if input_file == None or output_file == None:
     not_enough_args()
 
@@ -59,4 +59,5 @@ if temp_colours != []:
 
 print(input_file, output_file, code_len, max_guesses, available_colours)
     
-
+inp_file = open(input_file, "r")
+print(inp_file.read())
