@@ -1,0 +1,4 @@
+Guess 1: black
+Guess 2: black black
+Guess 3: black black black
+You won in 3 guesses. Congratulations!
