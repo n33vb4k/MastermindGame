@@ -1,8 +1,10 @@
-code red blue yellow 
+code red purple yellow violet 
 player human
-red green blue
-red red red 
-blue blue blue yellow
-red green green
-red blue yellow
-red red red
+red green 
+red red red red
+red purple purple yellow
+purple red green green
+purple red violet green
+red purple violet yellow green
+red purple violet yellow
+red purple yellow violet 

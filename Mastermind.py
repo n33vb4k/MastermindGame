@@ -63,7 +63,8 @@ def check_player(input_file):
 #complete game for human players
 def human_play_game(input_file, output_file, max_guesses, available_colours, code):
     count = 0
-        
+    guessed = False
+
     for line in input_file:
         colour_freq = {}
         for colour in code:
@@ -108,11 +109,15 @@ def human_play_game(input_file, output_file, max_guesses, available_colours, cod
 
         if guesses == code and count < max_guesses:
             output_file.write(f"You won in {count} guesses. Congratulations!\nThe game was completed. Further lines were ignored.")
+            guessed = True
             break
         elif guesses == code:
             output_file.write(f"You won in {count} guesses. Congratulations!")
+            guessed = True
             break
-
+    
+    if guessed == False:
+        output_file.write("You lost. Please try again.")
 
 #set default parameters
 input_file = None
@@ -150,7 +155,7 @@ if input_file == None or output_file == None:
 if temp_colours != []:
     available_colours = temp_colours
 
-print(input_file, output_file, code_len, max_guesses, available_colours) #DELETE
+print(input_file, output_file, code_len, max_guesses, available_colours) #delete before submission
 
 #open input file for reading
 try:
@@ -167,7 +172,7 @@ except FileNotFoundError:
 
 code_valid, code = check_code(inf, code_len, available_colours)
 
-print(f"code valid: {code_valid}, code: {code}")
+print(f"code valid: {code_valid}, code: {code}") #delete before submission
 
 if not code_valid:
     outf.write("No or ill-formed code provided")
@@ -175,9 +180,9 @@ if not code_valid:
 else:
     code.remove("code")
 
-player_valid, player = check_player(inf)
+player_valid, player = check_player(inf) 
 
-print(f"player valid: {player_valid}, player: {player}")
+print(f"player valid: {player_valid}, player: {player}") #delete before submission
 
 if not player_valid:
     outf.write("No or ill-formed player provided")
@@ -185,6 +190,10 @@ if not player_valid:
 
 if player == "human":
     human_play_game(inf, outf, max_guesses, available_colours, code)
+#add computer player
+
+inf.close()
+outf.close()
 
 successful()
 
