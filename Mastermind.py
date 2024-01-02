@@ -43,6 +43,7 @@ def check_code(input_file, code_length, available_colours):
  
     return True, code
 
+#checks the player is valid and returns what kind of player
 def check_player(input_file):
     line = input_file.readline().strip()
     player = line.split(" ")
@@ -58,6 +59,59 @@ def check_player(input_file):
     else:
         return False, None
     
+
+#complete game for human players
+def human_play_game(input_file, output_file, max_guesses, available_colours, code):
+    count = 0
+        
+    for line in input_file:
+        colour_freq = {}
+        for colour in code:
+            if colour not in colour_freq:
+                colour_freq[colour] = 1
+            else:
+                colour_freq[colour] += 1
+        
+        blackcount = 0
+        whitecount = 0
+        count += 1
+        output_line = f"Guess {count}: "
+        if count > max_guesses:
+            output_file.write(f"You can only have {max_guesses} guesses")
+            break
+
+        line = line.strip()
+        guesses = line.split(" ")
+
+        guess_valid = True
+        if len(guesses) != len(code):
+            guess_valid = False
+        for guess in guesses:
+            if guess not in available_colours:
+                guess_valid = False
+        if guess_valid == False:
+            output_file.write(f"Guess {count}: Ill-formed guess provided\n")
+            continue
+
+        for i in range(len(guesses)):
+            if guesses[i] in code:
+                if guesses[i] == code[i] and colour_freq[guesses[i]] != 0:
+                    blackcount += 1
+                    colour_freq[guesses[i]] -= 1
+                else:
+                    if colour_freq[guesses[i]] != 0:
+                        whitecount += 1
+                        colour_freq[guesses[i]] -= 1
+
+        output_line += "black "*blackcount + "white "*whitecount + "\n"
+        output_file.write(output_line)
+
+        if guesses == code and count < max_guesses:
+            output_file.write(f"You won in {count} guesses. Congratulations!\nThe game was completed. Further lines were ignored.")
+            break
+        elif guesses == code:
+            output_file.write(f"You won in {count} guesses. Congratulations!")
+            break
 
 
 #set default parameters
@@ -113,7 +167,7 @@ except FileNotFoundError:
 
 code_valid, code = check_code(inf, code_len, available_colours)
 
-print(f"code valid: {code_valid}, code:{code}")
+print(f"code valid: {code_valid}, code: {code}")
 
 if not code_valid:
     outf.write("No or ill-formed code provided")
@@ -123,14 +177,14 @@ else:
 
 player_valid, player = check_player(inf)
 
-print(f"player valid: {player_valid}, player:{player}")
+print(f"player valid: {player_valid}, player: {player}")
 
 if not player_valid:
     outf.write("No or ill-formed player provided")
     no_or_ill_formed_player()
 
+if player == "human":
+    human_play_game(inf, outf, max_guesses, available_colours, code)
 
-
-
-
+successful()
 
