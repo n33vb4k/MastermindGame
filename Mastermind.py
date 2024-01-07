@@ -159,12 +159,12 @@ def next_guess(guesses, blackcount, whitecount, available_colours):
         # Randomly select colors from available colors
         return [random.choice(available_colours) for _ in range(len(guesses))]
 
-    # Create a list of all possible permutations of remaining colors
-    possible_permutations = list(itertools.permutations(available_colours, len(guesses)))
+    # Create a list of all possible combinations of colors
+    possible_combination = list(itertools.product(available_colours, repeat = len(guesses)))
 
-    # Iterate through each permutation and check against feedback
-    for permutation in possible_permutations:
-        modified_guess = list(permutation)
+    # Iterate through each combination and check against feedback
+    for combination in possible_combination:
+        modified_guess = list(combination)
         current_blackcount, current_whitecount = process_computer_guess(modified_guess, None, get_colour_frequency(guesses), guesses)
 
         if current_blackcount == blackcount and current_whitecount == whitecount:
