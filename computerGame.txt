@@ -1,0 +1,6 @@
+code red blue yellow
+player human
+green green red
+blue red yellow
+blue yellow red
+red blue yellow

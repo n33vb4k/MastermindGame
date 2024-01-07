@@ -1,13 +1,15 @@
 #Mastermind Coursework
 import sys
+import random
+import itertools
 
 #set up exit codes
 def successful():
-    print("The programme ran successfully")
+    print("The program ran successfully")
     sys.exit(0)
 
 def not_enough_args():
-    print("Not enough programme arguments provided")
+    print("Not enough program arguments provided")
     sys.exit(1)
 
 def input_file_issue():
@@ -58,7 +60,17 @@ def check_player(input_file):
         return True, player[1]
     else:
         return False, None
-    
+
+#returns dictionary with colour and number of times it appears in the code
+def get_colour_frequency(code):
+    colour_freq = {}
+    for colour in code:
+        if colour not in colour_freq:
+            colour_freq[colour] = 1
+        else:
+            colour_freq[colour] += 1
+
+    return colour_freq
 
 #complete game for human players
 def human_play_game(input_file, output_file, max_guesses, available_colours, code):
@@ -66,13 +78,7 @@ def human_play_game(input_file, output_file, max_guesses, available_colours, cod
     guessed = False
 
     for line in input_file:
-        colour_freq = {}
-        for colour in code:
-            if colour not in colour_freq:
-                colour_freq[colour] = 1
-            else:
-                colour_freq[colour] += 1
-        
+        colour_freq = get_colour_frequency(code)
         blackcount = 0
         whitecount = 0
         count += 1
@@ -93,16 +99,19 @@ def human_play_game(input_file, output_file, max_guesses, available_colours, cod
         if guess_valid == False:
             output_file.write(f"Guess {count}: Ill-formed guess provided\n")
             continue
-
+        
+        #Count the blacks 
         for i in range(len(guesses)):
             if guesses[i] in code:
                 if guesses[i] == code[i] and colour_freq[guesses[i]] != 0:
                     blackcount += 1
                     colour_freq[guesses[i]] -= 1
-                else:
-                    if colour_freq[guesses[i]] != 0:
-                        whitecount += 1
-                        colour_freq[guesses[i]] -= 1
+                    
+        #count the whites
+        for i in range(len(guesses)):
+            if guesses[i] in code and colour_freq[guesses[i]] != 0:
+                whitecount += 1
+                colour_freq[guesses[i]] -= 1
 
         output_line += "black "*blackcount + "white "*whitecount + "\n"
         output_file.write(output_line)
@@ -118,6 +127,91 @@ def human_play_game(input_file, output_file, max_guesses, available_colours, cod
     
     if guessed == False:
         output_file.write("You lost. Please try again.")
+
+def process_computer_guess(guesses, output_file, colour_freq, code):
+    blackcount = 0
+    whitecount = 0
+    #check for blacks then whites
+    for i in range(len(guesses)):
+        if guesses[i] in code:
+            if guesses[i] == code[i] and colour_freq[guesses[i]] != 0:
+                blackcount += 1
+                colour_freq[guesses[i]] -= 1
+                
+    for i in range(len(guesses)):
+        if guesses[i] in code and colour_freq[guesses[i]] != 0:
+            whitecount += 1
+            colour_freq[guesses[i]] -= 1
+
+    if output_file != None:
+        output_file.write("black "*blackcount + "white "*whitecount + "\n")
+        
+    if guesses == code:
+        return -1,-1
+    return blackcount, whitecount
+
+def write_to_gamefile(guesses, game_file):
+    temp = " ".join(guesses)
+    game_file.write(temp + "\n")
+
+def next_guess(guesses, blackcount, whitecount, available_colours):
+    if blackcount == 0 and whitecount == 0:
+        # Randomly select colors from available colors
+        return [random.choice(available_colours) for _ in range(len(guesses))]
+
+    # Create a list of all possible permutations of remaining colors
+    possible_permutations = list(itertools.permutations(available_colours, len(guesses)))
+
+    # Iterate through each permutation and check against feedback
+    for permutation in possible_permutations:
+        modified_guess = list(permutation)
+        current_blackcount, current_whitecount = process_computer_guess(modified_guess, None, get_colour_frequency(guesses), guesses)
+
+        if current_blackcount == blackcount and current_whitecount == whitecount:
+            # Found a permutation that matches the feedback
+            return modified_guess
+
+    # If no exact match is found, return a random guess
+    return [random.choice(available_colours) for _ in range(len(guesses))]
+
+
+def computer_play_game(output_file, max_guesses, available_colours, code):
+    gamef = open("computerGame.txt", "w")
+    gamef.write(f"code {' '.join(code)}\nplayer human\n")
+    guessed = False
+    guess_len = len(code)
+    count = 1
+    #generate first guess (random):
+    guesses = []
+    for _ in range(guess_len):
+        colour = random.choice(available_colours)
+        guesses.append(colour)
+
+    output_file.write(f"Guess {count}: ")
+    write_to_gamefile(guesses, gamef)
+    black_c, white_c = process_computer_guess(guesses, output_file, get_colour_frequency(code), code)
+
+    while not guessed:
+        if black_c == -1 and white_c == -1:
+            output_file.write(f"You won in {count} guesses. Congratulations!")
+            guessed = True
+            break
+        
+        count += 1
+        if count == max_guesses:
+            output_file.write(f"You can only have {max_guesses} guesses\n")
+            break
+
+        output_file.write(f"Guess {count}: ")
+        guesses = next_guess(guesses, black_c, white_c, available_colours)
+        write_to_gamefile(guesses, gamef)
+        black_c, white_c = process_computer_guess(guesses, output_file, get_colour_frequency(code), code)
+            
+    if not guessed:
+        output_file.write("You lost. Please try again.")
+    
+    gamef.close()
+
 
 #set default parameters
 input_file = None
@@ -190,6 +284,8 @@ if not player_valid:
 
 if player == "human":
     human_play_game(inf, outf, max_guesses, available_colours, code)
+elif player == "computer":
+    computer_play_game(outf, max_guesses, available_colours, code)
 #add computer player
 
 inf.close()
