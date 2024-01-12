@@ -2,4 +2,18 @@ Guess 1: black
 Guess 2: white 
 Guess 3: black 
 Guess 4: black black black 
-You won in 4 guesses. Congratulations!
+Guess 5: black black 
+Guess 6: black 
+Guess 7: 
+Guess 8: black black white 
+Guess 9: black black white 
+Guess 10: white 
+Guess 11: black black 
+Guess 12: black black black 
+Guess 13: black black 
+Guess 14: black 
+Guess 15: black 
+Guess 16: black black black 
+Guess 17: black black 
+Guess 18: black black black black 
+You won in 18 guesses. Congratulations!
