@@ -1,6 +1,7 @@
-code red blue red
+code red blue yellow red orange
 player human
-blue blue blue
-blue green green
-orange blue orange
-red blue red
+green red orange green green
+blue orange red blue red
+orange blue blue red yellow
+red blue blue orange blue
+red blue yellow red orange
