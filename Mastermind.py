@@ -110,7 +110,7 @@ def human_play_game(input_file, output_file, max_guesses, available_colours, cod
             continue
         
         output_file.write(f"Guess {count}: ")
-        process_computer_guess(guesses, output_file, colour_freq, code)
+        process_guess(guesses, output_file, colour_freq, code)
 
         #win conditions
         if guesses == code and count < max_guesses:
@@ -127,7 +127,7 @@ def human_play_game(input_file, output_file, max_guesses, available_colours, cod
         output_file.write("You lost. Please try again.")
 
 #calculates black / white pin counts for a given guess and code
-def process_computer_guess(guesses, output_file, colour_freq, code):
+def process_guess(guesses, output_file, colour_freq, code):
     blackcount = 0
     whitecount = 0
 
@@ -158,144 +158,23 @@ def write_to_gamefile(guesses, game_file):
     temp = " ".join(guesses)
     game_file.write(temp + "\n")
 
+#generates a random guess from the list of available_colours
 def generate_random_guess(guess_len, available_colours):
-    #generate first guess (random):
-    guesses = []
-    for _ in range(guess_len):
-        colour = random.choice(available_colours)
-        guesses.append(colour)
+    guesses = [random.choice(available_colours) for _ in range(guess_len)]
     return guesses
 
+#reduces the set of possible codes by checking the current guess against each combination
+#if the guess would have the same black/white compared to the combination as previously, the combination is added to the remaining possible codes
+#rest of the codes are discarded
 def eliminate_codes(codes, guess, feedback):
     remaining_codes = set()
-    for code in codes:
-        if process_computer_guess(guess, None, get_colour_frequency(code), code) == feedback:
-            remaining_codes.add(code)
+    for comb in codes:
+        if process_guess(guess, None, get_colour_frequency(comb), comb) == feedback:
+            remaining_codes.add(comb)
     return remaining_codes
 
-def calculate_minmax_scores(codes):
-    scores = {}
-    for guess in codes:
-        max_score = float('inf')
-        for feedback in product(range(len(guess) + 1), repeat=2):
-            eliminated_codes = eliminate_codes(codes, guess, feedback)
-            score = max(len(codes) - len(eliminated_codes), 0)
-            if score == 0:
-                break  # No need to continue if score is already 0
-            max_score = min(max_score, score)
-        scores[guess] = max_score
-    return scores
-
-def select_next_guess(scores):
-    min_max_score = min(scores.values())
-    min_max_score_guesses = [guess for guess, score in scores.items() if score == min_max_score]
-    return min(min_max_score_guesses)
-
-def kuth_computer_play_game(output_file, max_guesses, available_colours, code):
-    gamef = open("computerGame.txt", "w")
-    gamef.write(f"code {' '.join(code)}\nplayer human\n")
-    guessed = False
-    guess_len = len(code)
-    count = 1
-
-    possible_codes = set(product(available_colours, repeat=guess_len))
-
-    while not guessed:
-        if count > max_guesses:
-            output_file.write(f"You can only have {max_guesses} guesses\n")
-            break
-
-        current_guess = select_next_guess(calculate_minmax_scores(possible_codes))
-
-        output_file.write(f"Guess {count}: ")
-        guesses = list(current_guess)
-        write_to_gamefile(guesses, gamef)
-        black_c, white_c = process_computer_guess(guesses, output_file, get_colour_frequency(code), code)
-
-        if black_c == -1 and white_c == -1:
-            output_file.write(f"You won in {count} guesses. Congratulations!")
-            guessed = True
-            break
-
-        possible_codes = eliminate_codes(possible_codes, current_guess, (black_c, white_c))
-
-        count += 1
-
-    if not guessed:
-        output_file.write("You lost. Please try again.")
-
-    gamef.close()
-
-
-#------------------------------------------------------------
-
+#returns the next guess after the possible codes have been reduced    
 def next_guess(guesses, blackcount, whitecount, available_colours, possible_combinations):
-    # Remove last guess from possible combinations
-    if tuple(guesses) in possible_combinations:
-        possible_combinations.remove(tuple(guesses))
-    
-    # If no colours are the same as the code, return a new guess containing random colours not previously used
-    if blackcount == 0 and whitecount == 0:
-        temp = set(available_colours) - set(guesses)
-        # Randomly select colors from the remaining available colors
-        return [random.choice(list(temp)) for _ in range(len(guesses))]
-
-    # Filter possible combinations based on the feedback
-    # filtered_combinations = [comb for comb in possible_combinations
-    #                          if process_computer_guess(list(comb), None, get_colour_frequency(guesses), guesses) == (blackcount, whitecount)]
-    filtered_combinations = list(eliminate_codes(possible_combinations, guesses, (blackcount, whitecount)))
-
-    # If there are still valid combinations, choose a random one, if there are none, return a random guess
-    if filtered_combinations:
-        return list(random.choice(filtered_combinations))
-    else:
-        return [random.choice(available_colours) for _ in range(len(guesses))]
-
-def computer_play_game(output_file, max_guesses, available_colours, code):
-    gamef = open("computerGame.txt", "w")
-    gamef.write(f"code {' '.join(code)}\nplayer human\n")
-    guessed = False
-    guess_len = len(code)
-    count = 1
-
-    #generate first guess (random):
-    guesses = []
-    for _ in range(guess_len):
-        colour = random.choice(available_colours)
-        guesses.append(colour)
-    
-    # Create a list of all possible combinations of colours
-    possible_codes = set(product(available_colours, repeat=guess_len))
-
-    output_file.write(f"Guess {count}: ")
-    write_to_gamefile(guesses, gamef)
-    black_c, white_c = process_computer_guess(guesses, output_file, get_colour_frequency(code), code)
-
-    while not guessed:
-        if black_c == -1 and white_c == -1:
-            output_file.write(f"You won in {count} guesses. Congratulations!")
-            guessed = True
-            break
-
-        count += 1
-        if count > max_guesses:
-            output_file.write(f"You can only have {max_guesses} guesses\n")
-            break
-
-        output_file.write(f"Guess {count}: ")
-        guesses = next_guess(guesses, black_c, white_c, available_colours, possible_codes)
-        write_to_gamefile(guesses, gamef)
-        black_c, white_c = process_computer_guess(guesses, output_file, get_colour_frequency(code), code)
-
-    if not guessed:
-        output_file.write("You lost. Please try again.")
-
-    gamef.close()
-    
-
-#------------------------------------------------------------
-    
-def next_guess_final(guesses, blackcount, whitecount, available_colours, possible_combinations):
     # Remove last guess from possible combinations
     if tuple(guesses) in possible_combinations:
         possible_combinations.remove(tuple(guesses))
@@ -308,47 +187,44 @@ def next_guess_final(guesses, blackcount, whitecount, available_colours, possibl
 
     return list(random.choice(list(possible_combinations)))
     
-def computer_play_game_final(output_file, max_guesses, available_colours, code):
+def computer_play_game(output_file, max_guesses, available_colours, code):
+    #create game file to track computer guesses
     gamef = open("computerGame.txt", "w")
     gamef.write(f"code {' '.join(code)}\nplayer human\n")
     guessed = False
     guess_len = len(code)
     count = 1
-    kuths = True
-
-    if guess_len > 2:
-        kuths = False
     
     # Create a set of all possible combinations of colours
     possible_codes = set(product(available_colours, repeat=guess_len))
-
-    if not kuths:
-        #generate first guess (random):
-        guesses = generate_random_guess(guess_len, available_colours)
-    else:
-        guesses = select_next_guess(calculate_minmax_scores(possible_codes))
+    #generate first guess (random):
+    guesses = generate_random_guess(guess_len, available_colours)
     
+    #write to output file as required
     output_file.write(f"Guess {count}: ")
-    write_to_gamefile(guesses, gamef)
-    black_c, white_c = process_computer_guess(guesses, output_file, get_colour_frequency(code), code)
+    write_to_gamefile(guesses, gamef) #writes guesses to game file
 
+    #pins for initial guess calculated
+    black_c, white_c = process_guess(guesses, output_file, get_colour_frequency(code), code)
+
+    #game loop
     while not guessed:
         count += 1
+        #break out if computer has gone past max guesses
         if count > max_guesses:
             output_file.write(f"You can only have {max_guesses} guesses\n")
             break
         
+        #update possible codes after each guess using eliminate_codes function
         possible_codes = eliminate_codes(possible_codes, guesses, (black_c, white_c))
 
         output_file.write(f"Guess {count}: ")
-        if not kuths:
-            guesses = next_guess_final(guesses, black_c, white_c, available_colours, possible_codes)
-        else:
-            guesses = select_next_guess(calculate_minmax_scores(possible_codes))
-        
+        #get the next guess, write to game file and calculate pins
+        guesses = next_guess(guesses, black_c, white_c, available_colours, possible_codes)
         write_to_gamefile(guesses, gamef)
-        black_c, white_c = process_computer_guess(guesses, output_file, get_colour_frequency(code), code)
+        black_c, white_c = process_guess(guesses, output_file, get_colour_frequency(code), code)
 
+        #pins values will be -1,-1 the guess is correct, breaks
         if black_c == -1 and white_c == -1:
             output_file.write(f"You won in {count} guesses. Congratulations!")
             guessed = True
@@ -370,32 +246,36 @@ code_len = 5
 max_guesses = 12
 available_colours = ["blue", "red", "yellow", "green", "orange"]
 
+#sets the list of arguments to the variable args
 args = sys.argv
 
+#manage arguments
 temp_colours = []
 for i in range(len(args)):
-    if i == 0:
+    if i == 0: #0 is just the script name, no action required
         continue
-    if i == 1:
+    if i == 1: #set input file
         input_file = args[i]
-    elif i == 2:
+    elif i == 2: #set output file
         output_file = args[i]
-    elif i == 3:
+    elif i == 3: #set code length, if not a int then leave as default
         try:
             code_len = int(args[i])
         except ValueError:
             pass
-    elif i == 4:
+    elif i == 4: #set max guesses, if not a int then leave as default
         try:
             max_guesses = int(args[i])
         except ValueError:
             pass
-    else:
+    else: #remaining arguments added to avaiable colours
         temp_colours.append(args[i])
 
+#exit if no input or output file (not enough args)
 if input_file == None or output_file == None:
     not_enough_args()
 
+#if there was arguments with colours, available colours list updated
 if temp_colours != []:
     available_colours = temp_colours
 
@@ -436,7 +316,7 @@ if player == "human":
     human_play_game(inf, outf, max_guesses, available_colours, code)
 elif player == "computer":
     starttime = time.process_time()
-    computer_play_game_final(outf, max_guesses, available_colours, code)
+    computer_play_game(outf, max_guesses, available_colours, code)
     endtime =  time.process_time()
     print(f"computer player took: {endtime - starttime}s")
 
