@@ -1,6 +1,8 @@
 code red blue green orange red
 player human
-yellow yellow blue blue yellow
-green red orange yellow orange
-orange orange red red blue
+indigo yellow pink red violet
+green pink green green orange
+red green blue blue orange
+red blue green orange blue
+red red green orange blue
 red blue green orange red

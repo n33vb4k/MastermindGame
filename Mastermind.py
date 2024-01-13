@@ -2,7 +2,6 @@
 import sys
 import time
 import random
-import copy
 from itertools import product
 
 #set up exit codes
@@ -78,17 +77,15 @@ def get_colour_frequency(code):
     return colour_freq
 
 #complete game for human players
-def human_play_game(input_file, output_file, max_guesses, available_colours, code):
+def human_play_game(input_file, output_file, max_guesses, available_colours, code_len):
     count = 0
     guessed = False
     
     #iterate through input file line by line checking each guess
     for line in input_file:
         colour_freq = get_colour_frequency(code)
-        blackcount = 0
-        whitecount = 0
         count += 1
-        output_line = f"Guess {count}: "
+        
         #if number of guesses exceeds max guesses, then failed, break out of the loop 
         if count > max_guesses:
             output_file.write(f"You can only have {max_guesses} guesses")
@@ -100,7 +97,7 @@ def human_play_game(input_file, output_file, max_guesses, available_colours, cod
 
         #checks if the guess follows the rules, otherwise writes ill formed guess to output file
         guess_valid = True
-        if len(guesses) != len(code):
+        if len(guesses) != code_len:
             guess_valid = False
         for guess in guesses:
             if guess not in available_colours:
@@ -164,7 +161,7 @@ def generate_random_guess(guess_len, available_colours):
     return guesses
 
 #reduces the set of possible codes by checking the current guess against each combination
-#if the guess would have the same black/white compared to the combination as previously, the combination is added to the remaining possible codes
+#if the guess would have the same black/white pins compared to the combination as previously, the combination is added to the remaining possible codes
 #rest of the codes are discarded
 def eliminate_codes(codes, guess, feedback):
     remaining_codes = set()
@@ -187,18 +184,17 @@ def next_guess(guesses, blackcount, whitecount, available_colours, possible_comb
 
     return list(random.choice(list(possible_combinations)))
     
-def computer_play_game(output_file, max_guesses, available_colours, code):
+def computer_play_game(output_file, max_guesses, available_colours, code, code_len):
     #create game file to track computer guesses
     gamef = open("computerGame.txt", "w")
     gamef.write(f"code {' '.join(code)}\nplayer human\n")
     guessed = False
-    guess_len = len(code)
     count = 1
     
     # Create a set of all possible combinations of colours
-    possible_codes = set(product(available_colours, repeat=guess_len))
+    possible_codes = set(product(available_colours, repeat=code_len))
     #generate first guess (random):
-    guesses = generate_random_guess(guess_len, available_colours)
+    guesses = generate_random_guess(code_len, available_colours)
     
     #write to output file as required
     output_file.write(f"Guess {count}: ")
@@ -296,7 +292,7 @@ except FileNotFoundError:
 
 code_valid, code = check_code(inf, code_len, available_colours)
 
-print(f"code valid: {code_valid}, code: {code}") #delete before submission
+print(f"code valid: {code_valid}, code: {code[1:]}") #delete before submission
 
 if not code_valid:
     outf.write("No or ill-formed code provided")
@@ -313,10 +309,10 @@ if not player_valid:
     no_or_ill_formed_player()
 
 if player == "human":
-    human_play_game(inf, outf, max_guesses, available_colours, code)
+    human_play_game(inf, outf, max_guesses, available_colours, code, code_len)
 elif player == "computer":
     starttime = time.process_time()
-    computer_play_game(outf, max_guesses, available_colours, code)
+    computer_play_game(outf, max_guesses, available_colours, code, code_len)
     endtime =  time.process_time()
     print(f"computer player took: {endtime - starttime}s")
 
