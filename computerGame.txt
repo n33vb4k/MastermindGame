@@ -1,8 +1,4 @@
-code red blue green orange red
+code red blue yellow
 player human
-indigo yellow pink red violet
-green pink green green orange
-red green blue blue orange
-red blue green orange blue
-red red green orange blue
-red blue green orange red
+yellow red red
+red blue yellow

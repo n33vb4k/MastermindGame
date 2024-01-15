@@ -1,2 +1,2 @@
-code red blue green orange red
+code red blue yellow
 player computer
