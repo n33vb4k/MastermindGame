@@ -1,4 +1,7 @@
 code red blue yellow
 player human
-yellow red red
+green green yellow
+green blue red
+green brown blue
+purple green red
 red blue yellow
