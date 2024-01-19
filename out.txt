@@ -1,6 +1,6 @@
-Guess 1: black 
-Guess 2: black white 
-Guess 3: white 
-Guess 4: white 
-Guess 5: black black black 
+Guess 1: white white 
+Guess 2: white white white white 
+Guess 3: black black black 
+Guess 4: black black black white white 
+Guess 5: black black black black black 
 You won in 5 guesses. Congratulations!
